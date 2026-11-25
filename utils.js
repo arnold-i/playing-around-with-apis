@@ -8,7 +8,7 @@ const color = {
 };
 
 function clean(text) {
-    return String(text ?? '').replace(/[\x00-\x09\x0b-\x1f\x7h]/g, '')
+    return String(text ?? '').replace(/[\x00-\x09\x0b-\x1f\x7f]/g, '')
 }
 
 function stripHtml(html) {
@@ -39,7 +39,7 @@ function timeAgo(ms) {
     if (minutes < 1) return 'just now';
     if (minutes < 60) return `${minutes} min ago`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hours${hours === 1 ? '' : 's'} ago`;
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
     const days = Math.floor(hours / 24);
     return `${days} day${days === 1 ? '' : 's'} ago`;
 }

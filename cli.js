@@ -5,6 +5,7 @@ const { color, clean, stripHtml, shorten, formatDate, timeAgo, prettyType} = req
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 rl.on('close', () => {
     console.log(color.cyan('\nGoodbye, and good luck with your job search!'));
+    process.exit(0);
 });
 
 const PAGE_SIZE = 10;
@@ -56,7 +57,7 @@ function hasSalary(job) {
 function applyAll() {
     results = alljobs.filter((job) => {
         if (state.keyword) {
-            const text = `${job.title} ${job.company_name} ${(job.tags || []).join('')}`.toLowerCase();
+            const text = `${job.title} ${job.company_name} ${(job.tags || []).join(' ')}`.toLowerCase();
             if (!text.includes(state.keyword)) return false;
         }
         if (state.category && job.category !== state.category) return false;
@@ -230,7 +231,7 @@ async function filterMenu() {
             state.category = await chooseFromList('Categories:', categories, state.category);
         } else if (n === 2) {
             const types = [...new Set(alljobs.map((j) => j.job_type).filter(Boolean))].sort();
-            state.job_type = await chooseFromList('Job types:', types, state.jobType);
+            state.jobType = await chooseFromList('Job types:', types, state.jobType);
         } else if (n === 3) {
             state.africaOnly = !state.africaOnly;
         } else if (n === 4) {
