@@ -188,5 +188,123 @@ async function browse() {
 }
 
 async function search() {
-    
+    const keyword = await ask('Search (job title, company or skill, or press Enter to clear: ');
+    if (keyword.length > 50) {
+        console.log(color.red('That search is too long. Please use 50 characters or fewer.'));
+        return;
+    }
+    state.keyword = keyword.toLowerCase();
+    applyAll();
+    if (keyword && results.length === 0) {
+        console.log(color.yellow(`No jobs found for "${keyword}". Try a broader word, like "support" or "design".`));
+    } else {
+        console.log(color.green(`${results.length} jobs found.`));
+    }
 }
+
+async function chooseFromList(title, values, current) {
+    console.log(`\n${title}`);
+    console.log(`0) All${current ? '' : ' (current)'}`);
+    values.forEach((v, i) => {
+        const count = alljobs.filter((j) => j.category === v || j.job_type === v).length;
+        console.log(`${i + 1}) ${v === current ? color.bold(v + ' (current)') : v} (${count})`);
+    });
+    const n = await askNumber('Choose a number: ', 0, values.length);
+    if (n === null) return current;
+    return n === 0 ? '' : values[n - 1];
+}
+
+async function filterMenu() {
+    while (true) {
+        console.log('\n' + color.bold('Filter jobs'));
+        console.log(`1) Category            [${state.category || 'All'}]`);
+        console.log(`2) Job type            [${state.jobType ? prettyType(state.jobType) : 'All'}]`);
+        console.log(`3) Can I apply from Africa?  [${state.africaOnly ? 'ON' : 'OFF'}]`);
+        console.log(`4) Only jobs with salary     [${state.salaryOnly ? 'ON' : 'OFF'}]`);
+        console.log('5) Back to menu');
+        const n = await askNumber('Choose an option: ', 1, 5);
+        if (n === null) continue;
+
+        if (n === 1) {
+            const categories = [...new Set(alljobs.map((j) => j.category).filter(Boolean))].sort();
+            state.category = await chooseFromList('Categories:', categories, state.category);
+        } else if (n === 2) {
+            const types = [...new Set(alljobs.map((j) => j.job_type).filter(Boolean))].sort();
+            state.job_type = await chooseFromList('Job types:', types, state.jobType);
+        } else if (n === 3) {
+            state.africaOnly = !state.africaOnly;
+        } else if (n === 4) {
+            state.salaryOnly = !state.salaryOnly;
+        } else {
+            return;
+        }
+        applyAll();
+        console.log(color.green(`${results.length} jobs match your filters.`));
+    }
+}
+
+async function sortMenu() {
+    const keys = Object.keys(SORTS);
+    console.log('\n' + color.bold('Sort jobs by:'));
+    keys.forEach((k, i) => console.log(`${i + 1}) ${SORTS[k].label}${k === state.sort ? ' (current)' : ''}`));
+    const n = await askNumber('Choose a number: ', 1, keys.length);
+    if (n === null) return;
+    state.sort = keys[n - 1];
+    applyAll();
+    console.log(color.green(`Sorted: ${SORTS[state.sort].label}.`));
+}
+
+function clearAll() {
+    Object.assign(state, { keyword: '', category: '', jobType: '', africaOnly: false, salaryOnly: false});
+    applyAll();
+    console.log(color.green(`Search and filters cleared. Showing all ${results.length} jobs.`));
+}
+
+async function viewShortList() {
+    if (shortlist.length === 0) {
+        console.log(color.yellow('Your shortlist is empty. Save jobs while browsing with [s].'));
+        return;
+    }
+    console.log('\n' + color.bold('My shortlist'));
+    shortlist.forEach((job, i) => {
+        console.log(`${i + 1}) ${clean(job.title)} - ${clean(job.company_name)}`);
+        console.log(`   ${color.cyan(clean(job.url))}`);
+    });
+    const answer = await ask('\nType a number to remove it, or press Enter to go back: ');
+    if (answer === '') return;
+    const n = Number(answer);
+    if (Number.isInteger(n) && n >= 1 && n <= shortlist.length) {
+        const [removed] = shortlist.splice(n - 1, 1);
+        console.log(color.green(`Removed "${shorten(removed.title, 40)}".`));
+    } else {
+        console.log(color.red(`Please enter a number from 1 to ${shortlist.length}.`));
+    }
+}
+
+async function main() {
+    console.log(color.bold(color.cyan('\nWelcome to RemoteReady - find remote jobs you can actually apply for.')));
+
+    while (!(await loadJobs())) {
+        const retry = (await ask('Try again? (y/n): ')).toLowerCase();
+        if (retry !== 'y') return rl.close();
+    }
+
+    while (true) {
+        try {
+            showHeader();
+            const choice = await askNumber('\nChoose an option (1-8): ', 1, 8);
+            if (choice === 1) await browse();
+            else if (choice === 2) await search();
+            else if (choice === 3) await filterMenu();
+            else if (choice === 4) await sortMenu();
+            else if (choice === 5) clearAll();
+            else if (choice === 6) await viewShortList();
+            else if (choice === 7) await loadJobs(true);
+            else if (choice === 8) return rl.close();
+        } catch (err) {
+            console.log(color.red('Something went wrong: ' + err.message));
+        }
+    }
+}
+
+main();
