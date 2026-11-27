@@ -5,7 +5,7 @@ RemoteReady is a command-line application that helps job seekers find **remote j
 ## Links
 
 - **Live application (via load balancer):** https://www.arnold-i.tech
-- **Demo video:** ADD_YOUTUBE_LINK_HERE
+- **Demo video:** https://youtu.be/64ZrHuvEYCo
 - **API key / credentials:** None required. The Remotive public API needs no API key, and the app has no login.
 
 ## Features
@@ -39,7 +39,7 @@ RemoteReady is a command-line application that helps job seekers find **remote j
 **Requirements:** Node.js 18 or higher (uses the built-in `fetch`). No other packages are needed.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/playing-around-with-apis.git
+git clone https://github.com/arnold-i/playing-around-with-apis.git
 cd playing-around-with-apis
 npm start
 ```
@@ -78,7 +78,7 @@ sudo apt install -y nodejs git
 
 # Get the application
 cd ~
-git clone https://github.com/YOUR_USERNAME/playing-around-with-apis.git
+git clone https://github.com/arnold-i/playing-around-with-apis.git
 cd playing-around-with-apis
 node cli.js          # quick test, then exit with 8
 
@@ -153,7 +153,7 @@ x-served-by: 7302-web-01
 x-served-by: 7302-web-02
 ```
 
-<!-- Add your screenshot here, e.g. ![Load balancer test](screenshots/lb-test.png) -->
+
 
 ## API used
 
